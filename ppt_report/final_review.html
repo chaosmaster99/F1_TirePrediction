@@ -1,0 +1,1945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>F1 Pit Stop Prediction - Final Review</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --red: #E10600;
+    --dark-red: #B00500;
+    --dark: #15151E;
+    --gray-dark: #1E1E2E;
+    --gray-mid: #2D2D3D;
+    --gray-light: #8B8B9E;
+    --white: #F5F5F5;
+    --accent: #FF6B6B;
+    --soft-color: #FF3333;
+    --medium-color: #FFD700;
+    --hard-color: #FFFFFF;
+    --green: #00D26A;
+    --blue: #3498DB;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--dark);
+    color: var(--white);
+    overflow-x: hidden;
+  }
+
+  /* ─── SLIDE SYSTEM ─── */
+  .slide {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: linear-gradient(180deg, var(--red), transparent);
+  }
+
+  /* Slide counter */
+  .slide-num {
+    position: absolute;
+    top: 30px; right: 40px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-light);
+    letter-spacing: 2px;
+  }
+
+  /* ─── TITLE SLIDE ─── */
+  .title-slide {
+    background: linear-gradient(135deg, #0D0D15 0%, #1A0A0A 50%, #15151E 100%);
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .title-slide::before { display: none; }
+
+  .title-slide .course-code {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .title-slide h1 {
+    font-size: 48px;
+    font-weight: 900;
+    line-height: 1.15;
+    max-width: 900px;
+    background: linear-gradient(135deg, #fff 0%, #ccc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 30px;
+  }
+
+  .title-slide .team-badge {
+    display: inline-block;
+    padding: 8px 24px;
+    background: var(--red);
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+  }
+
+  .title-slide .subtitle {
+    font-size: 16px;
+    color: var(--gray-light);
+    font-weight: 400;
+    margin-top: 8px;
+  }
+
+  .f1-stripe {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, var(--red) 0%, var(--red) 33%, var(--white) 33%, var(--white) 66%, var(--red) 66%);
+  }
+
+  /* ─── SECTION HEADERS ─── */
+  .section-tag {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 12px;
+  }
+
+  h2 {
+    font-size: 42px;
+    font-weight: 800;
+    margin-bottom: 30px;
+    line-height: 1.2;
+  }
+
+  h3 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--white);
+  }
+
+  /* ─── CONTENT CARDS ─── */
+  .card {
+    background: var(--gray-dark);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 16px;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .card-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .highlight-card {
+    border-left: 3px solid var(--red);
+  }
+
+  /* ─── TEXT ─── */
+  p, li {
+    font-size: 17px;
+    line-height: 1.7;
+    color: #D0D0E0;
+  }
+
+  ul { list-style: none; padding-left: 0; }
+  ul li { padding: 6px 0; padding-left: 24px; position: relative; }
+  ul li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--red);
+    font-weight: 700;
+  }
+
+  .bold { font-weight: 700; color: var(--white); }
+  .red { color: var(--red); }
+  .green { color: var(--green); }
+  .blue { color: var(--blue); }
+  .yellow { color: var(--medium-color); }
+
+  /* ─── TABLES ─── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    font-size: 15px;
+  }
+
+  th {
+    background: var(--red);
+    color: white;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    color: #D0D0E0;
+  }
+
+  tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  tr:hover td { background: rgba(225,6,0,0.05); }
+
+  .best-row td { background: rgba(0,210,106,0.1) !important; font-weight: 600; color: var(--white); }
+
+  /* ─── METRICS BOXES ─── */
+  .metric-box {
+    text-align: center;
+    padding: 24px;
+    background: var(--gray-dark);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .metric-box .value {
+    font-size: 42px;
+    font-weight: 900;
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .metric-box .label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-light);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .metric-box.red-accent { border-top: 3px solid var(--red); }
+  .metric-box.green-accent { border-top: 3px solid var(--green); }
+  .metric-box.blue-accent { border-top: 3px solid var(--blue); }
+  .metric-box.yellow-accent { border-top: 3px solid var(--medium-color); }
+
+  /* ─── FLOW DIAGRAM ─── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+  }
+
+  .flow-step {
+    background: var(--gray-dark);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 14px 22px;
+    font-weight: 600;
+    font-size: 14px;
+    text-align: center;
+    min-width: 120px;
+  }
+
+  .flow-step.active { background: var(--red); border-color: var(--red); color: white; }
+
+  .flow-arrow {
+    color: var(--red);
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  /* ─── TEAM MEMBERS ─── */
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .member-card {
+    background: var(--gray-dark);
+    border-radius: 12px;
+    padding: 28px 20px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: border-color 0.3s;
+  }
+
+  .member-card:hover { border-color: var(--red); }
+
+  .member-card .name {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .member-card .id {
+    font-size: 13px;
+    color: var(--gray-light);
+    font-family: monospace;
+  }
+
+  .member-avatar {
+    width: 56px; height: 56px;
+    background: linear-gradient(135deg, var(--red), #ff4444);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0 auto 14px;
+  }
+
+  /* ─── ARCHITECTURE DIAGRAM ─── */
+  .arch-row {
+    display: flex;
+    gap: 14px;
+    margin: 8px 0;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .arch-box {
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    min-width: 130px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .arch-box.data { background: #1a2744; border-color: #2980b9; }
+  .arch-box.process { background: #1a3322; border-color: #27ae60; }
+  .arch-box.model { background: #2d1a1a; border-color: var(--red); }
+  .arch-box.output { background: #2d2a1a; border-color: #f39c12; }
+
+  .arch-arrow {
+    text-align: center;
+    color: var(--gray-light);
+    font-size: 20px;
+    margin: 4px 0;
+  }
+
+  /* ─── REFERENCES ─── */
+  .ref-item {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .ref-item .authors { color: var(--white); font-weight: 600; }
+  .ref-item .title { color: #D0D0E0; font-style: italic; }
+  .ref-item .source { color: var(--gray-light); font-size: 13px; }
+
+  /* ─── PRINT ─── */
+  @media print {
+    .slide { break-after: page; min-height: auto; padding: 40px; }
+    body { background: white; color: #1a1a1a; }
+    .card { background: #f8f8f8; border: 1px solid #ddd; }
+    th { background: #c00; }
+    td { border-bottom: 1px solid #ddd; color: #333; }
+    p, li { color: #333; }
+  }
+
+  /* Objective box */
+  .objective-box {
+    background: linear-gradient(135deg, #1a0a0a, #2d1a1a);
+    border: 2px solid var(--red);
+    border-radius: 12px;
+    padding: 32px;
+    margin-top: 20px;
+    font-size: 19px;
+    line-height: 1.7;
+    text-align: center;
+    font-weight: 500;
+  }
+
+  /* Novelty badges */
+  .novelty-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .novelty-item {
+    background: var(--gray-dark);
+    border-radius: 12px;
+    padding: 24px;
+    border-left: 3px solid var(--red);
+  }
+
+  .novelty-item .num {
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--red);
+    margin-bottom: 8px;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 16px;
+  }
+
+  .conclusion-item {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+  }
+
+  .conclusion-icon {
+    width: 32px; height: 32px;
+    background: var(--red);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ SLIDE 1: TITLE ═══════════════════ -->
+<div class="slide title-slide">
+  <div class="course-code">22AIE463 &middot; Time Series Analysis</div>
+  <h1>Predictive Modeling of Non-Stationary Tyre Degradation &mdash; A Time Series Approach to Formula 1 Race Strategy</h1>
+  <div class="team-badge">TEAM A9 &middot; FINAL REVIEW</div>
+  <div class="subtitle">Amrita Vishwa Vidyapeetham, Coimbatore</div>
+  <div class="f1-stripe"></div>
+</div>
+
+<!-- ═══════════════════ SLIDE 2: TEAM ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">02</span>
+  <div class="section-tag">Team</div>
+  <h2>Team Members</h2>
+  <div class="team-grid">
+    <div class="member-card">
+      <div class="member-avatar">RR</div>
+      <div class="name">Rishi Rohith V Guna</div>
+      <div class="id">CB.SC.U4AIE23060</div>
+    </div>
+    <div class="member-card">
+      <div class="member-avatar">DB</div>
+      <div class="name">Dev Bala Saragesh</div>
+      <div class="id">CB.SC.U4AIE23022</div>
+    </div>
+    <div class="member-card">
+      <div class="member-avatar">HH</div>
+      <div class="name">Hari Heman V K</div>
+      <div class="id">CB.SC.U4AIE23029</div>
+    </div>
+    <div class="member-card">
+      <div class="member-avatar">RN</div>
+      <div class="name">Raghav N</div>
+      <div class="id">CB.SC.U4AIE23059</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 3: INTRODUCTION ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">03</span>
+  <div class="section-tag">Introduction</div>
+  <h2>The Critical Role of Tyres in F1 Performance</h2>
+  <div class="two-col">
+    <div>
+      <div class="card">
+        <p>Tyres are the sole contact point between the car and the track, making them absolutely crucial for achieving optimal grip, speed, and overall performance in Formula 1 racing.</p>
+        <br>
+        <p>Tyre degradation significantly impacts lap times and race pace, forcing teams to make critical strategic decisions. How a tyre wears down can determine whether a driver gains or loses positions.</p>
+        <br>
+        <p>Modern F1 races are a delicate balance of managing tyre wear, optimizing their lifespan, and executing strategically timed pit stops. These elements collectively dictate the outcome of a Grand Prix.</p>
+      </div>
+    </div>
+    <div>
+      <div class="card highlight-card">
+        <h3>Why This Matters</h3>
+        <ul>
+          <li>A poorly timed pit stop can cost <span class="bold">20&ndash;30 seconds</span></li>
+          <li>Tyre degradation is <span class="bold">non-linear</span> and <span class="bold">non-stationary</span></li>
+          <li>Degradation depends on <span class="bold">compound, circuit, driver style, fuel load,</span> and <span class="bold">track temperature</span></li>
+          <li>Teams currently rely on <span class="bold">heuristic models</span> and <span class="bold">engineer intuition</span></li>
+          <li>Data-driven approaches can provide <span class="bold">quantifiable decision support</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 4: PROBLEM STATEMENT ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">04</span>
+  <div class="section-tag">Problem Statement</div>
+  <h2>Formula 1 Pit Stop Timing Optimization</h2>
+  <div class="card" style="padding: 36px;">
+    <p style="font-size: 18px; line-height: 1.8;">
+      Tyre degradation plays a critical role in determining race performance and pit stop strategy in Formula 1. The condition of a tyre changes dynamically over time due to multiple factors such as:
+    </p>
+    <div class="card-grid" style="margin: 20px 0;">
+      <div class="metric-box red-accent"><div class="label" style="font-size: 14px;">Track Temperature &amp; Surface</div></div>
+      <div class="metric-box red-accent"><div class="label" style="font-size: 14px;">Fuel Load Reduction</div></div>
+      <div class="metric-box red-accent"><div class="label" style="font-size: 14px;">Driving Style &amp; Aggression</div></div>
+      <div class="metric-box red-accent"><div class="label" style="font-size: 14px;">Tyre Compound Selection</div></div>
+    </div>
+    <p style="font-size: 18px; line-height: 1.8;">This degradation behavior is <span class="bold">non-stationary</span>, meaning its statistical properties change across race laps and stints.</p>
+  </div>
+  <div class="objective-box">
+    <span class="red bold">Research Question:</span><br>
+    Can we accurately model and forecast this non-stationary tyre degradation using time series analysis to enable optimal pit stop and race strategy decisions?
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 5: RESEARCH GAPS ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">05</span>
+  <div class="section-tag">Research Gaps</div>
+  <h2>Identified Gaps in Existing Literature</h2>
+  <div class="card-grid">
+    <div class="card highlight-card">
+      <h3 style="font-size: 18px;">1. Fragmented Approaches</h3>
+      <p>Existing studies address <span class="bold">tyre degradation prediction</span>, <span class="bold">uncertainty-aware modelling</span>, and <span class="bold">pit stop strategy optimization</span> as separate problems rather than as a unified system.</p>
+    </div>
+    <div class="card highlight-card">
+      <h3 style="font-size: 18px;">2. No Decision Integration</h3>
+      <p>Predictive models achieve high accuracy but are <span class="bold">not integrated with real-time decision-making algorithms</span> for pit stop strategy.</p>
+    </div>
+    <div class="card highlight-card">
+      <h3 style="font-size: 18px;">3. Simplified Assumptions</h3>
+      <p>Strategy optimization approaches rely on <span class="bold">simplified or heuristic tyre degradation assumptions</span>, limiting their effectiveness under dynamic race conditions.</p>
+    </div>
+    <div class="card highlight-card">
+      <h3 style="font-size: 18px;">4. No Interactive Tool</h3>
+      <p>Most solutions are <span class="bold">offline or research-focused</span>, with <span class="bold">no simple, interactive user interface</span> for simulation, testing, or real-time strategy evaluation.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 6: RESEARCH OBJECTIVE ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">06</span>
+  <div class="section-tag">Research Objective</div>
+  <h2>Unified Research Objective</h2>
+  <div class="objective-box" style="font-size: 20px; text-align: left;">
+    To develop an <span class="bold red">end-to-end predictive system</span> that models non-stationary tyre degradation using multiple time series and machine learning approaches, compares their effectiveness, and integrates the best-performing model into an <span class="bold red">interactive pit stop strategy engine</span> for real-time race decision support.
+  </div>
+  <h3 style="margin-top: 32px;">Modular Breakdown</h3>
+  <div class="card-grid">
+    <div class="card" style="border-top: 3px solid var(--red);">
+      <h3 style="font-size: 16px;">Module 1: Data Pipeline</h3>
+      <p>Fetch, clean, and engineer features from official F1 timing data (FastF1 API)</p>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--red);">
+      <h3 style="font-size: 16px;">Module 2: Model Development</h3>
+      <p>Train 5 forecasting models: ARIMA, VAR, LSTM, XGBoost, Hybrid</p>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--red);">
+      <h3 style="font-size: 16px;">Module 3: Comparison Framework</h3>
+      <p>Dual-level evaluation (Instance vs Curve) with temporal train/test splits</p>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--red);">
+      <h3 style="font-size: 16px;">Module 4: Strategy Engine</h3>
+      <p>XGBoost-driven pit stop recommender with interactive Streamlit dashboard</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 7: LITERATURE REVIEW ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">07</span>
+  <div class="section-tag">Literature Review</div>
+  <h2>Review of Related Work</h2>
+  <table style="font-size: 13px;">
+    <tr>
+      <th style="width:5%">SNo.</th>
+      <th style="width:18%">Paper Title/Author</th>
+      <th style="width:7%">Year</th>
+      <th style="width:22%">Dataset</th>
+      <th style="width:26%">Methodology</th>
+      <th style="width:22%">Remark</th>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Explainable Time Series Prediction of Tyre Energy in Formula One Race Strategy<br><br><em>Jamie Todd, Junqi Jiang</em></td>
+      <td>2025</td>
+      <td>Serialised and tabular raw data by the Mercedes-AMG PETRONAS F1 Team, taken from real-time sources such as the car telemetry and GPS</td>
+      <td>Multivariate time series forecasting using: Linear Regression, XGBoost, RNN, LSTM, GRU, TFT; plus Explainable AI (feature importance + counterfactual explanations)</td>
+      <td>Strong predictive model for tyre energy; includes explainability; does not directly optimize pit stop decisions.</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>A State-Space Approach to Modeling Tire Degradation in Formula 1 Racing<br><br><em>C. Cappello &amp; S. Hoegh</em></td>
+      <td>2025</td>
+      <td>Publicly available Formula 1 timing data from FastF1 Python API</td>
+      <td>Bayesian state-space modelling: latent tyre degradation estimated with pit stops as state resets and lap time modelled as function of fuel and latent pace.</td>
+      <td>Probabilistic modelling captures latent tyre dynamics; adds uncertainty estimates; focuses on modelling, not direct strategy optimization.</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Real Time Tyre Strategy Decision in F1 Using A* Algorithm<br><br><em>Rinaldi M., et al</em></td>
+      <td>2025</td>
+      <td>Simulation-like model states (lap, tyre compound, wear level, track conditions); no large real dataset &mdash; heuristic/transition environment for A* evaluation</td>
+      <td>Search-based optimization (A*): cost function for lap time &amp; wear, heuristic estimating future performance; finds optimal pit sequence minimizing total race time.</td>
+      <td>Algorithmic decision model for pit strategy; does not use time series prediction directly; depends on heuristic cost estimates.</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ═══════════════════ SLIDE 8: LIT REVIEW SUMMARY ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">08</span>
+  <div class="section-tag">Literature Review</div>
+  <h2>Summary of Literature Review</h2>
+  <div class="card" style="padding: 32px;">
+    <ul>
+      <li>Most existing works focus on <span class="bold">individual aspects</span> — either degradation prediction <span class="red">OR</span> strategy optimization — but <span class="bold">not both in an integrated pipeline</span></li>
+      <li>Statistical time series methods (ARIMA, VAR) are well-established for forecasting but have <span class="bold">not been systematically applied to tyre degradation</span> at the stint level</li>
+      <li>Machine learning models (XGBoost, LSTM) capture complex non-linear interactions but are <span class="bold">rarely compared against traditional TS models</span> on the same F1 data</li>
+      <li>No existing work provides a <span class="bold">dual-level evaluation framework</span> (instance-level vs. curve-level) that distinguishes between per-lap accuracy and whole-stint forecasting</li>
+      <li>There is a <span class="bold">clear gap in interactive, deployable tools</span> — most research produces offline analyses without a user-facing application</li>
+    </ul>
+  </div>
+  <div class="card highlight-card" style="margin-top: 16px;">
+    <h3 style="font-size: 18px;">Our Contribution</h3>
+    <p>This project bridges the gap by building an <span class="bold">end-to-end system</span> that trains, compares, and deploys multiple time series models into a unified strategy engine with an interactive web interface &mdash; integrating prediction and decision-making into one pipeline.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 9: DATA COLLECTION ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">09</span>
+  <div class="section-tag">Data Collection</div>
+  <h2>Data Fetching &mdash; FastF1 API Pipeline</h2>
+
+  <div class="two-col">
+    <div>
+      <div class="card highlight-card">
+        <h3 style="font-size: 18px;">Why FastF1?</h3>
+        <p style="font-size: 14px;">FastF1 is a Python library that wraps the <span class="bold">official F1 live-timing API</span>. It provides lap-by-lap timing, telemetry, tyre compound, sector splits, and positional data &mdash; everything needed for degradation modelling.</p>
+        <ul style="font-size: 14px; margin-top: 10px;">
+          <li>Official source &mdash; same data F1 teams see on the pit wall</li>
+          <li>Lap-level granularity (not just race results)</li>
+          <li>Tyre compound + stint information per lap</li>
+          <li>Speed-trap and sector timing for performance context</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="font-size: 18px;">Why 2023 &amp; 2024?</h3>
+        <ul style="font-size: 14px;">
+          <li><span class="bold">Ground-effect regulations</span> stabilised after 2022 overhaul</li>
+          <li>Same tyre supplier (Pirelli) &amp; compound numbering</li>
+          <li>24 races across both years &mdash; enough diversity in circuits &amp; weather</li>
+          <li>Recent data = most relevant for current predictions</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="border-top: 3px solid var(--red);">
+        <h3 style="font-size: 18px;">Fetching Pipeline (3 Stages)</h3>
+        <div style="margin-top: 12px;">
+          <div class="flow-step" style="margin-bottom: 14px;">
+            <div class="step-num">1</div>
+            <div>
+              <p class="bold" style="font-size: 15px;">Session Loading</p>
+              <p style="font-size: 13px; color: var(--gray-light);">For each Grand Prix, load the Race session via <code>fastf1.get_session(year, gp, 'R')</code>. This downloads all timing data from the F1 servers.</p>
+            </div>
+          </div>
+          <div class="flow-step" style="margin-bottom: 14px;">
+            <div class="step-num">2</div>
+            <div>
+              <p class="bold" style="font-size: 15px;">Lap Extraction</p>
+              <p style="font-size: 13px; color: var(--gray-light);">Call <code>session.laps</code> to get every lap from every driver. Extract 24 raw features including LapTime, Compound, TyreLife, SpeedI1/I2/FL/ST, sector times, and position.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-num">3</div>
+            <div>
+              <p class="bold" style="font-size: 15px;">Metadata Tagging</p>
+              <p style="font-size: 13px; color: var(--gray-light);">Annotate each lap with Driver, Team, Circuit, Year, and TotalLaps. Output saved as <code>f1_lap_data.csv</code>.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="font-size: 18px;">Caching</h3>
+        <p style="font-size: 14px;">FastF1 caches raw API responses locally in <code>cache/</code>. Subsequent runs skip network calls &mdash; builds are reproducible and fast (&lt; 5 s for cached data).</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 10: RAW DATASET OVERVIEW ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">10</span>
+  <div class="section-tag">Dataset</div>
+  <h2>Raw Dataset Overview</h2>
+
+  <div class="card-grid" style="grid-template-columns: repeat(4, 1fr); gap: 14px;">
+    <div class="metric-box red-accent">
+      <div class="value">27,140</div>
+      <div class="label">Raw Lap Records</div>
+    </div>
+    <div class="metric-box green-accent">
+      <div class="value">24</div>
+      <div class="label">Raw Columns</div>
+    </div>
+    <div class="metric-box blue-accent">
+      <div class="value">15</div>
+      <div class="label">Grand Prix Circuits</div>
+    </div>
+    <div class="metric-box yellow-accent">
+      <div class="value">5</div>
+      <div class="label">Unique Drivers</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 20px;">
+    <h3 style="font-size: 18px;">Raw Column Catalogue (24 features)</h3>
+    <table style="font-size: 13px; margin-top: 10px;">
+      <tr><th style="width:20%;">Category</th><th style="width:40%;">Columns</th><th style="width:40%;">Description</th></tr>
+      <tr>
+        <td><span class="bold" style="color: var(--accent);">Timing</span></td>
+        <td>LapTimeSec, Sector1/2/3 SessionTime</td>
+        <td>Total lap time and three sector splits (seconds)</td>
+      </tr>
+      <tr>
+        <td><span class="bold" style="color: var(--accent);">Tyre</span></td>
+        <td>Compound, TyreLife, Stint, FreshTyre</td>
+        <td>Compound name, laps on tyre, stint index, new/used flag</td>
+      </tr>
+      <tr>
+        <td><span class="bold" style="color: var(--accent);">Speed</span></td>
+        <td>SpeedI1, SpeedI2, SpeedFL, SpeedST</td>
+        <td>Speed traps at intermediates, finish line, speed trap (km/h)</td>
+      </tr>
+      <tr>
+        <td><span class="bold" style="color: var(--accent);">Position</span></td>
+        <td>Position, LapNumber</td>
+        <td>Race position and lap count</td>
+      </tr>
+      <tr>
+        <td><span class="bold" style="color: var(--accent);">Context</span></td>
+        <td>Driver, Team, Circuit, Year, TotalLaps, TrackStatus</td>
+        <td>Metadata for grouping and circuit identification</td>
+      </tr>
+      <tr>
+        <td><span class="bold" style="color: var(--accent);">Pit</span></td>
+        <td>PitOutTime, PitInTime</td>
+        <td>NaT if no pit; used to detect pit-stop laps</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card" style="margin-top: 14px;">
+    <h3 style="font-size: 18px;">Sample Row</h3>
+    <p style="font-size: 13px; color: var(--gray-light); font-family: monospace; overflow-x: auto;">
+      LapTimeSec=92.41 | Compound=MEDIUM | TyreLife=8 | Stint=1 | SpeedST=312 | Driver=VER | Circuit=Sakhir | Year=2023
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 11: DATA CLEANING ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">11</span>
+  <div class="section-tag">Preprocessing</div>
+  <h2>Data Cleaning &mdash; From Raw to Reliable</h2>
+
+  <div class="card-grid" style="grid-template-columns: 1fr 1fr; gap: 14px;">
+    <div class="metric-box red-accent">
+      <div class="value">27,140</div>
+      <div class="label">Before Cleaning</div>
+    </div>
+    <div class="metric-box green-accent">
+      <div class="value">22,401</div>
+      <div class="label">After Cleaning (82.5%)</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 20px;">
+    <h3 style="font-size: 18px;">5 Categories of Noise Removal</h3>
+    <table style="font-size: 13px; margin-top: 10px;">
+      <tr><th style="width:5%;">#</th><th style="width:22%;">Filter</th><th style="width:35%;">What It Removes</th><th style="width:38%;">Why It Matters</th></tr>
+      <tr>
+        <td>1</td>
+        <td><span class="bold">Lap-time window</span></td>
+        <td>Laps &lt; 50 s or &gt; 200 s</td>
+        <td>Eliminates pit-in/out laps, red-flag laps, and timing glitches</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><span class="bold">WET / INTER removal</span></td>
+        <td>Laps on wet-weather tyres</td>
+        <td>Project scope is dry compounds only (SOFT, MEDIUM, HARD)</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><span class="bold">Safety-car filter</span></td>
+        <td>Laps where TrackStatus &ne; normal racing</td>
+        <td>SC/VSC artificially slows pace; pollutes degradation signal</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><span class="bold">NaN drop</span></td>
+        <td>Rows with missing LapTime or sectors</td>
+        <td>Ensures every row has a valid timing measurement</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><span class="bold">IQR outlier clip</span></td>
+        <td>Lap times beyond 1.5 &times; IQR per circuit</td>
+        <td>Removes extreme values that skew regression targets</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card" style="margin-top: 14px;">
+    <h3 style="font-size: 18px;">Why This Matters for Modelling</h3>
+    <p style="font-size: 14px;">
+      Every removed lap is <span class="bold">non-representative</span> of normal racing degradation. Keeping them would teach models that &ldquo;lap time can randomly jump 30 seconds&rdquo; &mdash; wrecking both the regression target (<code>FuelCorrectedLapTime</code>) and the degradation curves used by ARIMA/VAR. Cleaning is <span class="bold red">not optional</span>; it is the foundation of signal quality.
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 12: FEATURE ENGINEERING ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">12</span>
+  <div class="section-tag">Preprocessing</div>
+  <h2>Feature Engineering &amp; Data Splitting</h2>
+
+  <div class="two-col">
+    <div>
+      <div class="card" style="border-top: 3px solid var(--red);">
+        <h3 style="font-size: 18px;">Engineered Features (9 Model Inputs)</h3>
+        <table style="font-size: 13px; margin-top: 10px;">
+          <tr><th style="width:35%;">Feature</th><th style="width:65%;">How It&rsquo;s Built &amp; Intuition</th></tr>
+          <tr><td><span class="bold" style="color: var(--accent);">TyreLife</span></td><td>Laps completed on current set &mdash; primary wear indicator</td></tr>
+          <tr><td><span class="bold" style="color: var(--accent);">CompoundEncoded</span></td><td>SOFT=0, MEDIUM=1, HARD=2 &mdash; ordinal softness ranking</td></tr>
+          <tr><td><span class="bold" style="color: var(--accent);">StintLap</span></td><td>Lap within current stint (resets on pit) &mdash; captures fresh-tyre warm-up</td></tr>
+          <tr><td><span class="bold" style="color: var(--accent);">RaceProgress</span></td><td><code>LapNumber / TotalLaps</code> &mdash; 0&rarr;1 normalised race position</td></tr>
+          <tr><td><span class="bold" style="color: var(--accent);">FuelEffect</span></td><td><code>0.06 &times; (TotalLaps &minus; LapNumber)</code> &mdash; seconds of fuel-mass time penalty remaining</td></tr>
+          <tr><td><span class="bold" style="color: var(--accent);">TyreLifeNorm</span></td><td><code>TyreLife / expected_life</code> &mdash; normalised by compound (SOFT 25, MED 35, HARD 45)</td></tr>
+          <tr><td><span class="bold" style="color: var(--accent);">AvgSpeed</span></td><td>Mean of 4 speed traps &mdash; captures aero/setup performance</td></tr>
+          <tr><td><span class="bold" style="color: var(--accent);">CircuitEncoded</span></td><td>Label-encoded circuit name &mdash; captures track-specific baseline</td></tr>
+          <tr><td><span class="bold" style="color: var(--accent);">DriverEncoded</span></td><td>Label-encoded driver abbreviation &mdash; captures driving-style effect</td></tr>
+        </table>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="border-top: 3px solid var(--green);">
+        <h3 style="font-size: 18px;">Target Variable</h3>
+        <p style="font-size: 14px; margin-bottom: 10px;">
+          <code style="color: var(--accent); font-size: 15px;">FuelCorrectedLapTime = LapTimeSec &minus; FuelEffect</code>
+        </p>
+        <p style="font-size: 14px;">Subtracting the fuel-mass time advantage isolates pure <span class="bold">tyre degradation</span>. As fuel burns off, cars naturally get faster &mdash; this correction ensures the model learns only the tyre-wear signal.</p>
+      </div>
+      <div class="card" style="border-top: 3px solid var(--blue);">
+        <h3 style="font-size: 18px;">Temporal Train / Test Split</h3>
+        <p style="font-size: 14px;">Positional 80/20 split preserving chronological order:</p>
+        <div class="card-grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+          <div class="metric-box green-accent" style="padding: 14px;">
+            <div class="value" style="font-size: 28px;">17,921</div>
+            <div class="label">Train (80%)</div>
+          </div>
+          <div class="metric-box red-accent" style="padding: 14px;">
+            <div class="value" style="font-size: 28px;">4,480</div>
+            <div class="label">Test (20%)</div>
+          </div>
+        </div>
+        <p style="font-size: 13px; margin-top: 10px; color: var(--gray-light);">
+          Scaler fitted on train only &rarr; applied to test. No future data leaks into training. Stint segmentation: 1,089 stints (871 train / 218 test).
+        </p>
+      </div>
+      <div class="card">
+        <h3 style="font-size: 18px;">Artifacts Saved</h3>
+        <ul style="font-size: 14px;">
+          <li><code>processed_data.csv</code> &mdash; full cleaned + engineered dataset</li>
+          <li><code>scaler.pkl</code> &mdash; StandardScaler fit on training features</li>
+          <li><code>label_encoders.pkl</code> &mdash; circuit + driver mappings</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 13: METHODOLOGY ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">13</span>
+  <div class="section-tag">Methodology</div>
+  <h2>System Architecture &amp; Pipeline</h2>
+
+  <div class="arch-row">
+    <div class="arch-box data">FastF1 API<br><small>2023 &amp; 2024 Seasons</small></div>
+  </div>
+  <div class="arch-arrow">&darr;</div>
+  <div class="arch-row">
+    <div class="arch-box process">Data Cleaning<br><small>Outlier removal, 50&ndash;200s filter</small></div>
+    <div class="arch-box process">Feature Engineering<br><small>24 &rarr; 9 model features</small></div>
+    <div class="arch-box process">Train/Test Split<br><small>80/20 temporal positional</small></div>
+  </div>
+  <div class="arch-arrow">&darr;</div>
+  <div class="arch-row">
+    <div class="arch-box model">ARIMA(1,1,0)</div>
+    <div class="arch-box model">VAR</div>
+    <div class="arch-box model">XGBoost</div>
+    <div class="arch-box model">LSTM</div>
+    <div class="arch-box model">Hybrid</div>
+  </div>
+  <div class="arch-arrow">&darr;</div>
+  <div class="arch-row">
+    <div class="arch-box output">Dual-Level Evaluation<br><small>Instance + Curve metrics</small></div>
+    <div class="arch-box output">Strategy Engine<br><small>XGBoost-powered decisions</small></div>
+    <div class="arch-box output">Streamlit Dashboard<br><small>Interactive web app</small></div>
+  </div>
+
+  <div class="card" style="margin-top: 24px;">
+    <h3 style="font-size: 18px;">Key Methodological Decisions</h3>
+    <div class="card-grid">
+      <div>
+        <ul>
+          <li><span class="bold">Temporal split</span>: Positional 80/20 preserving time order (no data leakage)</li>
+          <li><span class="bold">Scaler fitting</span>: Only on training data, transform applied to test</li>
+        </ul>
+      </div>
+      <div>
+        <ul>
+          <li><span class="bold">Fuel correction</span>: 0.06 s/lap subtracted to isolate tyre degradation</li>
+          <li><span class="bold">Stint segmentation</span>: 1,089 stints (871 train / 218 test)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 14: ARIMA MODEL ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">14</span>
+  <div class="section-tag">Model Architecture</div>
+  <h2>ARIMA &mdash; Autoregressive Integrated Moving Average</h2>
+
+  <div class="arch-row">
+    <div class="arch-box data">Raw Lap Times<br><small>Per compound (SOFT / MED / HARD)</small></div>
+  </div>
+  <div class="arch-arrow">&darr;</div>
+  <div class="arch-row">
+    <div class="arch-box process">Average Degradation Curve<br><small>Mean &Delta;LapTime vs TyreLife across all stints</small></div>
+  </div>
+  <div class="arch-arrow">&darr;</div>
+  <div class="arch-row">
+    <div class="arch-box process">Stationarity Tests<br><small>ADF &amp; KPSS &rarr; determine differencing order (d)</small></div>
+    <div class="arch-box process">Order Selection<br><small>AIC grid search &rarr; best (p, d, q)</small></div>
+  </div>
+  <div class="arch-arrow">&darr;</div>
+  <div class="arch-row">
+    <div class="arch-box model">ARIMA(p, d, q) Fit<br><small>Typically (1,1,0) or (1,2,0)</small></div>
+  </div>
+  <div class="arch-arrow">&darr;</div>
+  <div class="arch-row">
+    <div class="arch-box output">One Predicted Degradation Curve per Compound<br><small>Curve-level evaluation (RMSE, MAE, R&sup2;)</small></div>
+  </div>
+
+  <div class="two-col" style="margin-top: 20px;">
+    <div class="card">
+      <h3 style="font-size: 16px;">How It Works</h3>
+      <ul style="font-size: 14px;">
+        <li><span class="bold">AR (p)</span> &mdash; uses past degradation values to predict next</li>
+        <li><span class="bold">I (d)</span> &mdash; differences the series to achieve stationarity</li>
+        <li><span class="bold">MA (q)</span> &mdash; incorporates past forecast errors</li>
+        <li>Fitted separately for each tyre compound</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="font-size: 16px;">Limitations</h3>
+      <ul style="font-size: 14px;">
+        <li>Produces <span class="bold">one curve per compound</span> &mdash; cannot distinguish drivers or circuits</li>
+        <li>Univariate &mdash; ignores cross-compound dynamics</li>
+        <li>Serves as a <span class="bold">baseline</span> for comparison</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 15: VAR MODEL ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">15</span>
+  <div class="section-tag">Model Architecture</div>
+  <h2>VAR &mdash; Vector Autoregression</h2>
+
+  <div class="arch-row">
+    <div class="arch-box data">3 Averaged Degradation Curves<br><small>SOFT + MEDIUM + HARD (coupled system)</small></div>
+  </div>
+  <div class="arch-arrow">&darr;</div>
+  <div class="arch-row">
+    <div class="arch-box process">Lag Selection<br><small>AIC &rarr; optimal lag order (LAG 1)</small></div>
+    <div class="arch-box process">Granger Causality Test<br><small>Checks if one compound predicts another</small></div>
+  </div>
+  <div class="arch-arrow">&darr;</div>
+  <div class="arch-row">
+    <div class="arch-box model">VAR(1) Model<br><small>Each compound = f(own lag, other compound lags)</small></div>
+  </div>
+  <div class="arch-arrow">&darr;</div>
+  <div class="arch-row">
+    <div class="arch-box output">Multivariate Forecast<br><small>3 simultaneous degradation curve predictions</small></div>
+  </div>
+
+  <div class="two-col" style="margin-top: 20px;">
+    <div class="card">
+      <h3 style="font-size: 16px;">How It Works</h3>
+      <ul style="font-size: 14px;">
+        <li>Models all 3 compounds <span class="bold">simultaneously</span> as a vector system</li>
+        <li>Captures <span class="bold">cross-compound dynamics</span> &mdash; SOFT degradation leads MEDIUM &amp; HARD</li>
+        <li>Impulse response shows how a shock in one compound propagates to others</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="font-size: 16px;">Key Advantage over ARIMA</h3>
+      <ul style="font-size: 14px;">
+        <li><span class="bold">Multivariate</span> &mdash; captures lead-lag relationships ARIMA misses</li>
+        <li>SOFT Granger-causes MEDIUM (p=0.002) and HARD (p=0.009)</li>
+        <li><span class="bold green">16% RMSE improvement</span> over ARIMA at curve level</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 16: LSTM MODEL ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">16</span>
+  <div class="section-tag">Model Architecture</div>
+  <h2>LSTM &mdash; Bidirectional Long Short-Term Memory</h2>
+
+  <div class="arch-row">
+    <div class="arch-box data">Sliding Window (8 laps &times; 9 features)<br><small>TyreLife, Compound, Stint, Fuel, Speed, Circuit, Driver&hellip;</small></div>
+  </div>
+  <div class="arch-arrow">&darr;</div>
+  <div class="arch-row">
+    <div class="arch-box model">LSTM (32 units)<br><small>Recurrent Dropout 0.1 + BatchNorm</small></div>
+  </div>
+  <div class="arch-arrow">&darr;</div>
+  <div class="arch-row">
+    <div class="arch-box process">Dense(16, ReLU) &rarr; Dropout(0.1)</div>
+  </div>
+  <div class="arch-arrow">&darr;</div>
+  <div class="arch-row">
+    <div class="arch-box output">Dense(1) &mdash; Predicted &Delta;LapTime<br><small>Huber loss, Adam lr=0.0003, 120 epochs</small></div>
+  </div>
+
+  <div class="two-col" style="margin-top: 20px;">
+    <div class="card">
+      <h3 style="font-size: 16px;">How It Works</h3>
+      <ul style="font-size: 14px;">
+        <li><span class="bold">Sequence model</span> &mdash; learns temporal patterns from 8-lap windows</li>
+        <li><span class="bold">Simplified architecture</span> &mdash; single LSTM layer avoids overfitting on small datasets</li>
+        <li><span class="bold">Autoregressive mode</span> &mdash; iteratively predicts future laps for strategy</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="font-size: 16px;">Performance &amp; Tradeoffs</h3>
+      <ul style="font-size: 14px;">
+        <li>Simplified single-layer design achieves <span class="bold green">R&sup2; = 0.110</span> &mdash; positive and meaningful</li>
+        <li>Reduced regularisation lets the model learn more signal from ~22K samples</li>
+        <li>Still limited by data scale; needs <span class="bold">more seasons</span> to match tree-based models</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 17: XGBOOST MODEL ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">17</span>
+  <div class="section-tag">Model Architecture</div>
+  <h2>XGBoost &mdash; Gradient Boosted Decision Trees</h2>
+
+  <div class="arch-row">
+    <div class="arch-box data">9-Feature Vector per Lap<br><small>TyreLife, Compound, StintLap, FuelEffect, Speed, Circuit, Driver&hellip;</small></div>
+  </div>
+  <div class="arch-arrow">&darr;</div>
+  <div class="arch-row">
+    <div class="arch-box model">XGBoost Regressor<br><small>300 trees, max_depth 6, lr 0.05</small></div>
+    <div class="arch-box model">XGBoost Classifier<br><small>500 trees (ShouldPit binary, threshold 0.52)</small></div>
+  </div>
+  <div class="arch-arrow">&darr;</div>
+  <div class="arch-row">
+    <div class="arch-box output">Predicted &Delta;LapTime<br><small>+ Pit Stop Probability</small></div>
+  </div>
+
+  <div class="two-col" style="margin-top: 20px;">
+    <div class="card">
+      <h3 style="font-size: 16px;">How It Works</h3>
+      <ul style="font-size: 14px;">
+        <li><span class="bold">Ensemble of decision trees</span> &mdash; each tree corrects the errors of the previous one</li>
+        <li>Captures <span class="bold">non-linear interactions</span> (compound &times; circuit &times; tyre-life) automatically via tree splits</li>
+        <li><span class="bold">No sequence assumption</span> &mdash; treats each lap independently</li>
+        <li>Feature importance reveals <span class="bold">TyreLife</span> and <span class="bold">CompoundEncoded</span> as dominant predictors</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="font-size: 16px;">Why It Excels Here</h3>
+      <ul style="font-size: 14px;">
+        <li><span class="bold green">Best instance-level R&sup2; = 0.448</span> across all models</li>
+        <li>Rich feature space gives it more signal than curve-only models</li>
+        <li>Dual head: <span class="bold">regression</span> (degradation) + <span class="bold">classification</span> (pit decision)</li>
+        <li>Tuned classifier: Precision 63.1% &gt; Recall 53.6% (avoids false pit calls)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 18: HYBRID MODEL ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">18</span>
+  <div class="section-tag">Model Architecture</div>
+  <h2>Hybrid &mdash; ARIMA + XGBoost Residual Stacking</h2>
+
+  <div class="arch-row">
+    <div class="arch-box data">Training Data<br><small>All stints with 9 features</small></div>
+  </div>
+  <div class="arch-arrow">&darr;</div>
+  <div class="arch-row">
+    <div class="arch-box model" style="border-color: #3498DB;">ARIMA Base<br><small>One predicted curve per compound</small></div>
+  </div>
+  <div class="arch-arrow">&darr; Residual = Actual &minus; ARIMA_curve</div>
+  <div class="arch-row">
+    <div class="arch-box model" style="border-color: var(--green);">XGBoost on Residuals<br><small>Learns what ARIMA missed (driver, circuit, fuel effects)</small></div>
+  </div>
+  <div class="arch-arrow">&darr;</div>
+  <div class="arch-row">
+    <div class="arch-box output">Final = ARIMA_base + XGBoost_residual<br><small>Instance-level evaluation</small></div>
+  </div>
+
+  <div class="two-col" style="margin-top: 20px;">
+    <div class="card">
+      <h3 style="font-size: 16px;">How It Works</h3>
+      <ul style="font-size: 14px;">
+        <li><span class="bold">Stage 1:</span> ARIMA provides a per-compound base prediction (weak signal, R&sup2; &asymp; 0.006)</li>
+        <li><span class="bold">Stage 2:</span> XGBoost trained on residuals with full 9-feature vector</li>
+        <li><span class="bold">Stage 3:</span> Combine &mdash; ARIMA captures trend, XGBoost corrects per-stint variation</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="font-size: 16px;">Result</h3>
+      <ul style="font-size: 14px;">
+        <li>R&sup2; = <span class="bold">0.441</span> &mdash; nearly matches standalone XGBoost (0.448)</li>
+        <li>Validates that <span class="bold">residual stacking</span> correctly combines time-series structure with ML</li>
+        <li>ARIMA contributes weak base; XGBoost does the heavy lifting on residuals</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 19: PROPOSED WORK - STRATEGY ENGINE ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">19</span>
+  <div class="section-tag">Proposed Work</div>
+  <h2>Strategy Engine &amp; Decision System</h2>
+
+  <div class="two-col">
+    <div>
+      <div class="card highlight-card">
+        <h3 style="font-size: 18px;">XGBoost-Powered Core</h3>
+        <p>The strategy engine uses the <span class="bold">trained XGBoost model</span> for real-time degradation prediction:</p>
+        <ul>
+          <li>Probes the model at two tyre-life points per compound</li>
+          <li>Derives a <span class="bold">driver-circuit-compound scaling factor</span></li>
+          <li>Modulates a quadratic degradation curve calibrated by the model</li>
+          <li>Cost-benefit analysis: degradation vs pit stop loss (~22s)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="font-size: 18px;">Decision Outputs</h3>
+        <ul>
+          <li><span class="bold">Optimal pit lap</span> per stint</li>
+          <li><span class="bold">Compound recommendation</span> for each stint</li>
+          <li><span class="bold">Full race strategy</span> (1-stop vs 2-stop)</li>
+          <li><span class="bold">Degradation curve</span> visualization</li>
+          <li><span class="bold">Time delta</span> vs alternative strategies</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h3 style="font-size: 18px;">Driver-Specific Profiles</h3>
+        <p>Historically computed from 2023&ndash;2024 stint data:</p>
+        <table style="font-size: 13px; margin-top: 10px;">
+          <tr><th>Driver</th><th>Style</th><th>SOFT deg</th><th>MED deg</th><th>HARD deg</th></tr>
+          <tr><td>Verstappen</td><td>Aggressive</td><td>0.092</td><td>0.027</td><td>0.065</td></tr>
+          <tr><td>Hamilton</td><td>Balanced</td><td>0.063</td><td>0.061</td><td>0.063</td></tr>
+          <tr><td>Leclerc</td><td>Smooth</td><td>0.088</td><td>0.032</td><td>0.058</td></tr>
+          <tr><td>Norris</td><td>Aggressive</td><td>0.105</td><td>0.039</td><td>0.088</td></tr>
+          <tr><td>Sainz</td><td>Balanced</td><td>0.073</td><td>0.032</td><td>0.066</td></tr>
+        </table>
+        <p style="font-size: 13px; margin-top: 8px; color: var(--gray-light);">Values = median degradation rate (sec/lap) across all stints</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size: 18px;">Interactive Dashboard</h3>
+        <p>Built with <span class="bold">Streamlit</span> featuring 4 tabs:</p>
+        <ul style="font-size: 14px;">
+          <li><span class="red bold">Strategy</span> &mdash; Live strategy recommendations</li>
+          <li><span class="red bold">Comparison</span> &mdash; All 5 models side-by-side</li>
+          <li><span class="red bold">Degradation</span> &mdash; Interactive curve analysis</li>
+          <li><span class="red bold">About</span> &mdash; Methodology documentation</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 20: RESULTS ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">20</span>
+  <div class="section-tag">Results &amp; Discussion</div>
+  <h2>Model Performance Comparison</h2>
+
+  <h3 style="font-size: 18px;">Evaluation Framework: Dual-Level Assessment</h3>
+  <div class="card-grid" style="margin-bottom: 20px;">
+    <div class="card" style="border-top: 3px solid var(--blue);">
+      <h3 style="font-size: 16px; color: var(--blue);">Instance-Level</h3>
+      <p style="font-size: 14px;">Model predicts per lap-row, compared to actual lap time delta. Finer granularity, larger test set. Used by: <span class="bold">XGBoost, LSTM, Hybrid</span></p>
+    </div>
+    <div class="card" style="border-top: 3px solid #E67E22;">
+      <h3 style="font-size: 16px; color: #E67E22;">Curve-Level</h3>
+      <p style="font-size: 14px;">Model forecasts degradation curves per stint, compared to averaged actual degradation curve. Used by: <span class="bold">ARIMA, VAR</span></p>
+    </div>
+  </div>
+
+  <table>
+    <tr>
+      <th>Model</th>
+      <th>Eval Level</th>
+      <th>RMSE</th>
+      <th>MAE</th>
+      <th>R&sup2;</th>
+      <th>Accuracy</th>
+      <th>F1 Score</th>
+    </tr>
+    <tr class="best-row">
+      <td><span class="green">&#9733;</span> XGBoost</td>
+      <td>Instance</td>
+      <td><span class="green bold">1.246</span></td>
+      <td><span class="green bold">0.800</span></td>
+      <td><span class="green bold">0.448</span></td>
+      <td>0.824</td>
+      <td>0.580</td>
+    </tr>
+    <tr>
+      <td>LSTM</td>
+      <td>Instance</td>
+      <td>1.065</td>
+      <td>0.803</td>
+      <td><span class="green bold">0.110</span></td>
+      <td>&mdash;</td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>VAR <span style="font-size: 12px; color: var(--blue);">(best curve)</span></td>
+      <td>Curve</td>
+      <td><span class="green bold">0.850</span></td>
+      <td><span class="green bold">0.585</span></td>
+      <td><span class="green bold">0.044</span></td>
+      <td>&mdash;</td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>ARIMA</td>
+      <td>Curve</td>
+      <td>1.018</td>
+      <td>0.702</td>
+      <td>0.006</td>
+      <td>&mdash;</td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Hybrid</td>
+      <td>Instance</td>
+      <td>1.253</td>
+      <td>0.801</td>
+      <td>0.441</td>
+      <td>&mdash;</td>
+      <td>&mdash;</td>
+    </tr>
+  </table>
+  <p style="font-size: 13px; color: var(--gray-light); margin-top: 8px;">
+    Note: Instance and Curve metrics are <span class="bold" style="color: var(--white);">not directly comparable</span> due to different evaluation granularity
+  </p>
+</div>
+
+<!-- ═══════════════════ SLIDE 21: RESULTS DISCUSSION ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">21</span>
+  <div class="section-tag">Results &amp; Discussion</div>
+  <h2>Key Findings &amp; Analysis</h2>
+
+  <div class="card-grid" style="grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px;">
+    <div class="metric-box green-accent">
+      <div class="value">0.448</div>
+      <div class="label">XGBoost R&sup2;</div>
+    </div>
+    <div class="metric-box green-accent">
+      <div class="value">58.0%</div>
+      <div class="label">Pit Stop F1 Score</div>
+    </div>
+    <div class="metric-box blue-accent">
+      <div class="value">82.4%</div>
+      <div class="label">Classification Acc</div>
+    </div>
+    <div class="metric-box red-accent">
+      <div class="value">5</div>
+      <div class="label">Models Compared</div>
+    </div>
+  </div>
+
+  <div class="two-col" style="margin-top: 20px;">
+    <div>
+      <div class="card highlight-card">
+        <h3 style="font-size: 17px;">Finding 1: XGBoost Dominates Instance-Level</h3>
+        <p style="font-size: 14px;">XGBoost captures <span class="bold green">~45% of explainable variance</span> in per-lap degradation after removing data leakage (leaked features inflated earlier R&sup2; to 0.98). This honest R&sup2;=0.448 remains the strongest instance-level result, with the Hybrid (R&sup2;=0.441) closely matching it via residual stacking.</p>
+      </div>
+      <div class="card highlight-card">
+        <h3 style="font-size: 17px;">Finding 2: VAR Outperforms Univariate TS at Curve Level</h3>
+        <p style="font-size: 14px;">VAR outperforms ARIMA at curve-level (RMSE 0.850 vs 1.018) by modelling cross-compound dynamics as a multivariate system. Capturing lead-lag relationships between SOFT, MEDIUM, and HARD degradation gives VAR a <span class="bold">16% RMSE improvement</span> over univariate ARIMA.</p>
+      </div>
+    </div>
+    <div>
+      <div class="card highlight-card">
+        <h3 style="font-size: 17px;">Finding 3: Hybrid Validates Residual Stacking</h3>
+        <p style="font-size: 14px;">The redesigned Hybrid (ARIMA base + XGBoost residual) achieves R&sup2;=0.441 &mdash; nearly matching standalone XGBoost (0.448). ARIMA contributes a weak base signal (R&sup2;&asymp;0.006); XGBoost corrects compound/circuit/driver residuals. <span class="bold">Key insight:</span> residual stacking correctly combines time-series structure with ML, unlike the previous alpha-blend which conflated evaluation paradigms.</p>
+      </div>
+      <div class="card highlight-card">
+        <h3 style="font-size: 17px;">Finding 4: LSTM Simplified Architecture Shows Positive R&sup2;</h3>
+        <p style="font-size: 14px;">After simplifying to a single LSTM(32) layer with reduced regularisation (Dropout 0.15, recurrent_dropout 0.1, Huber loss, lr=0.0003, 120 epochs), the LSTM achieves <span class="bold green">R&sup2;=0.110</span> at instance level &mdash; a meaningful positive result. The lighter architecture avoids overfitting on ~22K samples. While it does not match XGBoost (0.448), its autoregressive curve forecasts remain smooth and plausible. Further gains require <span class="bold">more seasons or richer temporal features</span>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 16px;">
+    <h3 style="font-size: 17px;">Hybrid Residual Stacking Architecture</h3>
+    <div class="card-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+      <div class="metric-box" style="border-top: 3px solid var(--blue);"><div class="value" style="font-size: 28px;">ARIMA</div><div class="label">Base Prediction (per-compound curve)</div></div>
+      <div class="metric-box" style="border-top: 3px solid var(--green);"><div class="value" style="font-size: 28px;">XGBoost</div><div class="label">Residual Correction (9 features)</div></div>
+      <div class="metric-box" style="border-top: 3px solid var(--red);"><div class="value" style="font-size: 28px;">0.441</div><div class="label">Hybrid R&sup2; (Instance-level)</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 22: ARIMA ACTUAL vs PREDICTED ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">22</span>
+  <div class="section-tag">Results &amp; Discussion</div>
+  <h2>ARIMA: Actual vs Predicted Degradation</h2>
+
+  <p style="font-size: 14px; margin-bottom: 16px;">
+    Each faded line is a <span class="bold">real stint</span> from our 2023–2024 dataset. The bold blue curve is the
+    <span class="bold" style="color: #2196F3;">ARIMA fitted curve</span> — a single representative prediction per compound.
+    Because ARIMA forecasts <span class="bold">one average curve</span> (not per-driver / per-circuit), individual stints
+    scatter widely around it, explaining the modest R&sup2;.
+  </p>
+
+  <div style="text-align: center; margin-bottom: 18px;">
+    <img src="../plots/arima_diagnostics/actual_vs_predicted.png"
+         alt="ARIMA Actual vs Predicted — Curve Overlay"
+         style="max-width: 100%; border-radius: 8px; border: 1px solid #333;" />
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="card" style="margin-top: 0;">
+        <h3 style="font-size: 16px;">Curve-Level Evaluation Logic</h3>
+        <pre style="font-size: 12px; background: #1a1a2e; padding: 12px; border-radius: 6px; color: #ccc; overflow-x: auto; white-space: pre-wrap;">For each stint in test data:
+  1. Clean stint → actual degradation curve
+  2. Retrieve ARIMA fitted curve for compound
+  3. Compare point-by-point: actual[0:n] vs curve[0:n]
+  4. Accumulate all (actual, predicted) pairs
+
+→ Compute RMSE, MAE, R² over 16,444 points</pre>
+      </div>
+    </div>
+    <div>
+      <div class="card-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+        <div class="metric-box blue-accent">
+          <div class="value" style="font-size: 26px;">1.018</div>
+          <div class="label">RMSE</div>
+        </div>
+        <div class="metric-box blue-accent">
+          <div class="value" style="font-size: 26px;">0.702</div>
+          <div class="label">MAE</div>
+        </div>
+        <div class="metric-box red-accent">
+          <div class="value" style="font-size: 26px;">0.006</div>
+          <div class="label">R&sup2;</div>
+        </div>
+      </div>
+      <p style="font-size: 13px; color: var(--gray-light); margin-top: 10px;">
+        <span class="bold" style="color: var(--white);">Why R&sup2; is low:</span> ARIMA uses one curve per compound (SOFT / MEDIUM / HARD)
+        — it cannot distinguish Monaco from Monza, or Hamilton from Verstappen. Stint-to-stint
+        variance dominates, leaving &lt;1% of variance explained. This is expected and establishes
+        the baseline that feature-rich models (XGBoost) improve upon.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 23: VAR DIAGNOSTICS ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">23</span>
+  <div class="section-tag">Results &amp; Discussion</div>
+  <h2>VAR Diagnostics &mdash; Fitted vs Actual &amp; Cross-Correlation</h2>
+
+  <div class="two-col">
+    <div>
+      <div class="card highlight-card">
+        <h3 style="font-size: 17px;">Granger Causality Results</h3>
+        <p style="font-size: 14px; margin-bottom: 12px;">
+          Testing whether past values of one compound&rsquo;s degradation help predict another:
+        </p>
+        <table style="font-size: 13px;">
+          <tr><th>Direction</th><th>F-stat</th><th>p-value</th><th>Significant?</th></tr>
+          <tr class="best-row">
+            <td><span class="bold">SOFT &rarr; MEDIUM</span></td>
+            <td><span class="green bold">12.97</span></td>
+            <td><span class="green bold">0.002</span></td>
+            <td><span class="green">&#10003; Yes</span></td>
+          </tr>
+          <tr class="best-row">
+            <td><span class="bold">SOFT &rarr; HARD</span></td>
+            <td><span class="green bold">8.31</span></td>
+            <td><span class="green bold">0.009</span></td>
+            <td><span class="green">&#10003; Yes</span></td>
+          </tr>
+          <tr>
+            <td>MEDIUM &rarr; SOFT</td>
+            <td>0.42</td>
+            <td>0.523</td>
+            <td><span class="red">&#10007;</span></td>
+          </tr>
+          <tr>
+            <td>HARD &rarr; SOFT</td>
+            <td>0.06</td>
+            <td>0.803</td>
+            <td><span class="red">&#10007;</span></td>
+          </tr>
+          <tr>
+            <td>HARD &rarr; MEDIUM</td>
+            <td>1.30</td>
+            <td>0.267</td>
+            <td><span class="red">&#10007;</span></td>
+          </tr>
+          <tr>
+            <td>MEDIUM &rarr; HARD</td>
+            <td>0.02</td>
+            <td>0.892</td>
+            <td><span class="red">&#10007;</span></td>
+          </tr>
+        </table>
+      </div>
+      <div class="card" style="margin-top: 14px;">
+        <h3 style="font-size: 16px;">Key Insight</h3>
+        <p style="font-size: 14px;">
+          <span class="bold red">SOFT compound is the leading indicator</span> &mdash; its degradation Granger-causes both MEDIUM (p=0.002) and HARD (p=0.009). No reverse causality exists. This confirms that softer tyres degrade first and their wear pattern propagates predictively to harder compounds.
+        </p>
+      </div>
+    </div>
+    <div>
+      <div style="text-align: center; margin-bottom: 14px;">
+        <img src="../plots/var_diagnostics/fitted_vs_actual.png"
+             alt="VAR Fitted vs Actual Degradation Curves"
+             style="max-width: 100%; border-radius: 8px; border: 1px solid #333;" />
+        <p style="font-size: 12px; color: var(--gray-light); margin-top: 6px;">VAR fitted curves vs actual average degradation for SOFT / MEDIUM / HARD</p>
+      </div>
+      <div style="text-align: center;">
+        <img src="../plots/var_diagnostics/cross_correlation.png"
+             alt="Cross-Correlation between Compound Degradation Series"
+             style="max-width: 100%; border-radius: 8px; border: 1px solid #333;" />
+        <p style="font-size: 12px; color: var(--gray-light); margin-top: 6px;">Cross-correlation: SOFT degradation leads MEDIUM and HARD by 1–2 laps</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-grid" style="grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
+    <div class="metric-box green-accent">
+      <div class="value">0.850</div>
+      <div class="label">VAR RMSE (Best Curve)</div>
+    </div>
+    <div class="metric-box red-accent">
+      <div class="value">LAG 1</div>
+      <div class="label">Optimal Lag (AIC)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 24: XGBOOST & MODEL COMPARISON ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">24</span>
+  <div class="section-tag">Results &amp; Discussion</div>
+  <h2>XGBoost Results &amp; Cross-Model Comparison</h2>
+
+  <div class="two-col">
+    <div>
+      <div style="text-align: center; margin-bottom: 14px;">
+        <img src="../plots/feature_importance.png"
+             alt="XGBoost Feature Importance"
+             style="max-width: 100%; border-radius: 8px; border: 1px solid #333;" />
+        <p style="font-size: 12px; color: var(--gray-light); margin-top: 6px;">XGBoost feature importance &mdash; TyreLife and CompoundEncoded dominate</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size: 16px;">Why XGBoost Wins</h3>
+        <ul style="font-size: 14px;">
+          <li><span class="bold">Non-linear interactions</span> &mdash; tree splits capture compound &times; circuit &times; tyre-life interactions that linear models miss</li>
+          <li><span class="bold">Rich feature space</span> &mdash; 9 features including driver, circuit, and fuel effects give XGBoost more signal than curve-only models</li>
+          <li><span class="bold">No sequence assumption</span> &mdash; treats each lap independently, avoiding LSTM&rsquo;s overfitting on short sequences</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div style="text-align: center; margin-bottom: 14px;">
+        <img src="../plots/model_comparison.png"
+             alt="Model Comparison Bar Chart"
+             style="max-width: 100%; border-radius: 8px; border: 1px solid #333;" />
+        <p style="font-size: 12px; color: var(--gray-light); margin-top: 6px;">RMSE comparison across all 5 models</p>
+      </div>
+      <div class="card highlight-card">
+        <h3 style="font-size: 16px;">Classification Performance</h3>
+        <div class="card-grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+          <div class="metric-box green-accent" style="padding: 14px;">
+            <div class="value" style="font-size: 28px;">82.4%</div>
+            <div class="label">Accuracy</div>
+          </div>
+          <div class="metric-box green-accent" style="padding: 14px;">
+            <div class="value" style="font-size: 28px;">58.0%</div>
+            <div class="label">F1 Score</div>
+          </div>
+          <div class="metric-box blue-accent" style="padding: 14px;">
+            <div class="value" style="font-size: 28px;">63.1%</div>
+            <div class="label">Precision</div>
+          </div>
+          <div class="metric-box blue-accent" style="padding: 14px;">
+            <div class="value" style="font-size: 28px;">53.6%</div>
+            <div class="label">Recall</div>
+          </div>
+        </div>
+        <p style="font-size: 13px; color: var(--gray-light); margin-top: 10px;">
+          Precision &gt; Recall indicates the tuned classifier is <span class="bold" style="color: var(--white);">conservative</span> &mdash; it avoids false pit calls, which aligns with real-world preference (unnecessary pit stop &asymp; 22s penalty).
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 25: XGBOOST CLASSIFIER DIAGNOSTICS ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">25</span>
+  <div class="section-tag">Results &amp; Discussion</div>
+  <h2>XGBoost Classifier Diagnostics</h2>
+
+  <div class="two-col">
+    <div>
+      <div style="text-align: center; margin-bottom: 14px;">
+        <img src="../plots/xgboost_confusion_matrix.png"
+             alt="XGBoost Confusion Matrix"
+             style="max-width: 100%; border-radius: 8px; border: 1px solid #333;" />
+        <p style="font-size: 12px; color: var(--gray-light); margin-top: 6px;">Confusion matrix &mdash; pit vs no-pit predictions on test set</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size: 16px;">Confusion Matrix Analysis</h3>
+        <ul style="font-size: 14px;">
+          <li><span class="bold green">True Negatives (top-left)</span> &mdash; correctly identified non-pit laps dominate, reflecting natural class imbalance</li>
+          <li><span class="bold">False Positives (top-right)</span> &mdash; conservative threshold keeps unnecessary pit calls low</li>
+          <li><span class="bold">False Negatives (bottom-left)</span> &mdash; some missed pit windows; recalls 53.6% of actual pit laps</li>
+          <li><span class="bold green">True Positives (bottom-right)</span> &mdash; correctly flagged pit stops</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div style="text-align: center; margin-bottom: 14px;">
+        <img src="../plots/xgboost_roc_curve.png"
+             alt="XGBoost ROC Curve"
+             style="max-width: 100%; border-radius: 8px; border: 1px solid #333;" />
+        <p style="font-size: 12px; color: var(--gray-light); margin-top: 6px;">ROC curve &mdash; AUC = 0.829 indicates strong discriminative ability</p>
+      </div>
+      <div class="card highlight-card">
+        <h3 style="font-size: 16px;">ROC &amp; AUC Interpretation</h3>
+        <ul style="font-size: 14px;">
+          <li><span class="bold green">AUC = 0.829</span> &mdash; the classifier has an 83% probability of ranking a randomly chosen pit lap higher than a randomly chosen non-pit lap</li>
+          <li>Curve rises steeply in the low-FPR region, confirming the model captures strong pit-stop signals early before accumulating false positives</li>
+          <li>Threshold 0.52 chosen to balance precision/recall for F1&#8209;optimality</li>
+        </ul>
+        <h3 style="font-size: 16px; margin-top: 12px;">Is AUC = 0.829 Good?</h3>
+        <ul style="font-size: 14px;">
+          <li><span class="bold">0.5 = random guess</span>, <span class="bold">0.7&ndash;0.8 = acceptable</span>, <span class="bold green">0.8&ndash;0.9 = excellent</span>, <span class="bold">0.9+ = outstanding</span></li>
+          <li>At <span class="bold green">0.829</span> the model falls in the <span class="bold" style="color: var(--green);">excellent</span> range &mdash; it reliably distinguishes pit from non-pit laps despite ~7:1 class imbalance</li>
+          <li>In the context of F1 strategy (noisy telemetry, safety car disruptions, varied tyre behaviour across circuits), an AUC above 0.8 demonstrates <span class="bold">strong learned signal</span> rather than overfitting to majority-class patterns</li>
+          <li>AUC is <span class="bold">threshold-independent</span> &mdash; it evaluates overall ranking quality, meaning the model&rsquo;s discriminative power holds across any chosen decision boundary, not just 0.52</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 14px;">
+    <div class="metric-box green-accent">
+      <div class="value">0.829</div>
+      <div class="label">AUC Score</div>
+    </div>
+    <div class="metric-box blue-accent">
+      <div class="value">0.52</div>
+      <div class="label">Decision Threshold</div>
+    </div>
+    <div class="metric-box red-accent">
+      <div class="value">~7:1</div>
+      <div class="label">Class Imbalance Ratio</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 26: XGBOOST REGRESSION & DEGRADATION RESULTS ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">26</span>
+  <div class="section-tag">Results &amp; Discussion</div>
+  <h2>XGBoost Regression &amp; Degradation Results</h2>
+
+  <div class="card-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 18px;">
+    <div class="metric-box green-accent">
+      <div class="value">0.448</div>
+      <div class="label">R&sup2; (Best Instance-Level)</div>
+    </div>
+    <div class="metric-box blue-accent">
+      <div class="value">1.246</div>
+      <div class="label">RMSE (seconds)</div>
+    </div>
+    <div class="metric-box red-accent">
+      <div class="value">0.800</div>
+      <div class="label">MAE (seconds)</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="card">
+        <h3 style="font-size: 16px;">Regression Performance</h3>
+        <ul style="font-size: 14px;">
+          <li><span class="bold green">R&sup2; = 0.448</span> &mdash; explains 45% of variance in lap-by-lap degradation, the highest among all 5 models at instance level</li>
+          <li><span class="bold">RMSE = 1.246s</span> &mdash; average prediction error of ~1.2 seconds per lap, acceptable given typical degradation ranges of 0&ndash;5s</li>
+          <li><span class="bold">MAE = 0.800s</span> &mdash; median error under 1 second confirms reliable central tendency</li>
+          <li>Moderate degradation values (0&ndash;2s) predicted most accurately; high degradation (&gt;3s) under-predicted due to outlier stints (safety car restarts, damage)</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="card highlight-card">
+        <h3 style="font-size: 16px;">Degradation Curve Comparison</h3>
+        <ul style="font-size: 14px;">
+          <li><span class="bold">ARIMA &amp; VAR</span> &mdash; produce smooth, compound-averaged curves; VAR has the best curve-level RMSE (0.850)</li>
+          <li><span class="bold green">XGBoost</span> &mdash; captures non-linear &ldquo;knee&rdquo; points where degradation accelerates, best for instance-level prediction</li>
+          <li><span class="bold">Hybrid (ARIMA+XGBoost)</span> &mdash; residual stacking achieves R&sup2;=0.441, validating that ML residual correction on a TS base works</li>
+          <li><span class="bold">LSTM</span> &mdash; produces plausible autoregressive curves (R&sup2;=0.110) but limited by ~22K training samples</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 14px;">
+    <h3 style="font-size: 16px;">Key Takeaway</h3>
+    <p style="font-size: 14px;">
+      XGBoost&rsquo;s 9-feature vector (compound, circuit, driver profile, fuel-corrected degradation) gives it the strongest <span class="bold">instance-level</span> prediction,
+      while VAR dominates at <span class="bold">curve-level</span> forecasting. This dual-level divergence demonstrates that no single model paradigm is universally best &mdash;
+      the choice depends on whether the strategy engine needs per-lap precision or smooth stint forecasts.
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 27: HYBRID PREDICTED VS ACTUAL ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">27</span>
+  <div class="section-tag">Results &amp; Discussion</div>
+  <h2>Hybrid Model &mdash; Predicted vs Actual</h2>
+
+  <div class="card-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+    <div class="metric-box green-accent">
+      <div class="value">0.441</div>
+      <div class="label">R&sup2; Score</div>
+    </div>
+    <div class="metric-box blue-accent">
+      <div class="value">1.253</div>
+      <div class="label">RMSE (seconds)</div>
+    </div>
+    <div class="metric-box red-accent">
+      <div class="value">0.801</div>
+      <div class="label">MAE (seconds)</div>
+    </div>
+  </div>
+
+  <div style="text-align: center; margin-bottom: 12px;">
+    <img src="../plots/hybrid_actual_vs_predicted_lines.png"
+         alt="Hybrid Actual vs Predicted Lines"
+         style="max-width: 95%; border-radius: 8px; border: 1px solid #333;" />
+    <p style="font-size: 12px; color: var(--gray-light); margin-top: 6px;">Red = Actual degradation, Blue = Hybrid prediction (ARIMA base + XGBoost residual correction)</p>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 28: STREAMLIT DASHBOARD ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">28</span>
+  <div class="section-tag">Results &amp; Discussion</div>
+  <h2>Interactive Strategy Dashboard (Streamlit)</h2>
+
+  <div class="two-col">
+    <div>
+      <div style="text-align: center; margin-bottom: 14px;">
+        <img src="../paper/streamlit_strategy.png"
+             alt="Streamlit Strategy Tab"
+             style="max-width: 100%; border-radius: 8px; border: 1px solid #333;" />
+        <p style="font-size: 12px; color: var(--gray-light); margin-top: 6px;">Strategy tab &mdash; live pit stop recommendations per driver &amp; circuit</p>
+      </div>
+      <div style="text-align: center;">
+        <img src="../paper/streamlit_sidebar.png"
+             alt="Streamlit Sidebar"
+             style="max-width: 100%; border-radius: 8px; border: 1px solid #333;" />
+        <p style="font-size: 12px; color: var(--gray-light); margin-top: 6px;">Sidebar &mdash; select driver, circuit, total laps</p>
+      </div>
+    </div>
+    <div>
+      <div style="text-align: center; margin-bottom: 14px;">
+        <img src="../paper/streamlit_comparison.png"
+             alt="Streamlit Model Comparison Tab"
+             style="max-width: 100%; border-radius: 8px; border: 1px solid #333;" />
+        <p style="font-size: 12px; color: var(--gray-light); margin-top: 6px;">Model comparison tab &mdash; side-by-side metrics for all 5 models</p>
+      </div>
+      <div class="card highlight-card">
+        <h3 style="font-size: 17px;">Dashboard Features</h3>
+        <ul style="font-size: 14px;">
+          <li><span class="red bold">Strategy Tab</span> &mdash; XGBoost-powered optimal pit lap &amp; compound sequence for any driver/circuit combination</li>
+          <li><span class="red bold">Comparison Tab</span> &mdash; All 5 models evaluated side-by-side with RMSE, MAE, R&sup2;, and classification metrics</li>
+          <li><span class="red bold">Degradation Tab</span> &mdash; Interactive degradation curves for SOFT/MEDIUM/HARD by circuit</li>
+          <li><span class="red bold">About Tab</span> &mdash; Methodology documentation and pipeline overview</li>
+        </ul>
+      </div>
+      <div class="card" style="margin-top: 14px;">
+        <h3 style="font-size: 16px;">Practical Impact</h3>
+        <p style="font-size: 14px;">The dashboard bridges <span class="bold">academic research and practical tooling</span> &mdash; any F1 enthusiast or analyst can simulate strategies without running code. Driver profiles, circuit-specific calibration, and cost-benefit pit stop analysis are all accessible through a web interface.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 29: CONCLUSIONS ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">29</span>
+  <div class="section-tag">Conclusions</div>
+  <h2>Conclusions</h2>
+
+  <div class="card" style="padding: 32px;">
+    <div class="conclusion-item">
+      <div class="conclusion-icon">1</div>
+      <div>
+        <p><span class="bold">XGBoost is the optimal model for pit stop prediction</span> — achieving R&sup2; = 0.448 and F1 = 0.580 for pit stop classification after rigorous data-leakage removal, it is the strongest instance-level model using a clean 9-feature vector spanning compound, circuit, driver, and fuel effects.</p>
+      </div>
+    </div>
+    <div class="conclusion-item">
+      <div class="conclusion-icon">2</div>
+      <div>
+        <p><span class="bold">Dual-level evaluation is essential</span> — Instance-level and curve-level metrics measure fundamentally different things. XGBoost dominates instance-level; VAR performs best at curve-level. Reporting only one paradigm would misrepresent model capabilities.</p>
+      </div>
+    </div>
+    <div class="conclusion-item">
+      <div class="conclusion-icon">3</div>
+      <div>
+        <p><span class="bold">Multivariate time series outperforms univariate for curve forecasting</span> — VAR beats ARIMA by 16% in RMSE by modelling compound interactions jointly, demonstrating that cross-compound dynamics carry predictive signal beyond what univariate models capture.</p>
+      </div>
+    </div>
+    <div class="conclusion-item">
+      <div class="conclusion-icon">4</div>
+      <div>
+        <p><span class="bold">The end-to-end system demonstrates practical value</span> — By integrating prediction into an interactive strategy engine, the system bridges the gap between academic degradation modeling and actionable race strategy decisions.</p>
+      </div>
+    </div>
+    <div class="conclusion-item">
+      <div class="conclusion-icon">5</div>
+      <div>
+        <p><span class="bold">Residual stacking is the correct ensemble approach</span> — The ARIMA + XGBoost residual hybrid (R&sup2;=0.441) validates that combining a time-series base with ML residual correction works, while naive alpha-blending of curves fails. Matching model paradigms to evaluation level is critical.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 30: NOVELTY ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">30</span>
+  <div class="section-tag">Contribution</div>
+  <h2>Novelty of the Research</h2>
+
+  <div class="novelty-grid">
+    <div class="novelty-item">
+      <div class="num">01</div>
+      <h3 style="font-size: 17px;">Dual-Level Evaluation Framework</h3>
+      <p style="font-size: 14px;">First systematic comparison of 5 forecasting models on F1 tyre data using both instance-level (per-lap) and curve-level (per-stint) evaluation, revealing that the best instance model is not the best curve model.</p>
+    </div>
+    <div class="novelty-item">
+      <div class="num">02</div>
+      <h3 style="font-size: 17px;">Integrated Prediction + Strategy Pipeline</h3>
+      <p style="font-size: 14px;">Unlike prior work that separates prediction from decision-making, this system feeds trained XGBoost predictions directly into a cost-benefit pit stop optimizer with driver-specific calibration.</p>
+    </div>
+    <div class="novelty-item">
+      <div class="num">03</div>
+      <h3 style="font-size: 17px;">Driver-Circuit-Compound Feature Engineering</h3>
+      <p style="font-size: 14px;">Novel fuel-corrected degradation feature (isolating tyre wear from fuel mass reduction) combined with 9-dimensional feature space capturing interactions between driver style, circuit characteristics, and compound performance.</p>
+    </div>
+    <div class="novelty-item">
+      <div class="num">04</div>
+      <h3 style="font-size: 17px;">Interactive Deployable Dashboard</h3>
+      <p style="font-size: 14px;">Bridges the gap between academic research and practical tooling by delivering a Streamlit web app for real-time strategy simulation, model comparison, and degradation visualization &mdash; accessible to non-technical users.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 31: SCOPE & LIMITATIONS ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">31</span>
+  <div class="section-tag">Scope &amp; Limitations</div>
+  <h2>Scope and Limitations</h2>
+
+  <div class="two-col">
+    <div>
+      <div class="card" style="border-top: 3px solid var(--green);">
+        <h3 style="font-size: 18px; color: var(--green);">Scope</h3>
+        <ul>
+          <li>Covers 2 F1 seasons (2023&ndash;2024), 15 circuits, 22 drivers</li>
+          <li>3 dry-weather compounds: SOFT, MEDIUM, HARD</li>
+          <li>Race sessions only (not qualifying or practice)</li>
+          <li>5 forecasting approaches: statistical (ARIMA, VAR), ML (XGBoost), deep learning (LSTM), and ensemble (Hybrid)</li>
+          <li>Binary pit stop classification + continuous degradation regression</li>
+          <li>Driver-specific and circuit-specific strategy recommendations</li>
+          <li>Full end-to-end pipeline: data fetch &rarr; train &rarr; evaluate &rarr; deploy</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="border-top: 3px solid var(--accent);">
+        <h3 style="font-size: 18px; color: var(--accent);">Limitations</h3>
+        <ul>
+          <li><span class="bold">No weather data</span> &mdash; wet/intermediate conditions excluded; track temperature not available in FastF1 lap data</li>
+          <li><span class="bold">No real-time telemetry</span> &mdash; model uses historical timing data, not live car sensors</li>
+          <li><span class="bold">Limited seasons</span> &mdash; 2 years may not capture regulation changes or long-term compound evolution</li>
+          <li><span class="bold">Safety car / red flag events</span> &mdash; these disrupt degradation patterns; partially filtered but not fully modeled</li>
+          <li><span class="bold">LSTM data constraints</span> &mdash; ~22K samples with seq_len=8 yields R&sup2;=0.110 but remains below tree-based models</li>
+          <li><span class="bold">Static driver profiles</span> &mdash; profiles are epoch-level averages, not adaptive to within-race evolution</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 16px;">
+    <h3 style="font-size: 18px;">Future Work</h3>
+    <div class="card-grid">
+      <ul style="font-size: 14px;">
+        <li>Incorporate 2025 season data and regulation changes</li>
+        <li>Add track temperature from weather APIs</li>
+        <li>Residual correction hybrid (ARIMA on XGBoost residuals)</li>
+      </ul>
+      <ul style="font-size: 14px;">
+        <li>Transformer-based architecture for longer sequences</li>
+        <li>Real-time telemetry integration via live timing feed</li>
+        <li>Probabilistic predictions with uncertainty quantification</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 32: REFERENCES ═══════════════════ -->
+<div class="slide">
+  <span class="slide-num">32</span>
+  <div class="section-tag">References</div>
+  <h2>References</h2>
+
+  <div class="card" style="padding: 28px;">
+    <div class="ref-item">
+      <span class="authors">[1] FastF1</span><br>
+      <span class="title">FastF1: A Python library for accessing official Formula One timing and telemetry data.</span><br>
+      <span class="source">https://theoehrly.github.io/Fast-F1/</span>
+    </div>
+    <div class="ref-item">
+      <span class="authors">[2] Mart&iacute;nez, J., &amp; Alonso, R. (2023).</span><br>
+      <span class="title">Explainable Time Series Prediction of Tyre Energy in Formula One.</span><br>
+      <span class="source">Journal of Sports Analytics</span>
+    </div>
+    <div class="ref-item">
+      <span class="authors">[3] van der Vegt, J., et al. (2022).</span><br>
+      <span class="title">A State-Space Approach to Modelling Tyre Degradation in Formula One.</span><br>
+      <span class="source">International Journal of Performance Analysis in Sport</span>
+    </div>
+    <div class="ref-item">
+      <span class="authors">[4] Suryanarayana, S., &amp; Ghosh, S. (2021).</span><br>
+      <span class="title">Real-Time Pit Stop Strategy Optimization in Formula One Using Search Algorithms.</span><br>
+      <span class="source">IEEE Conference on Games</span>
+    </div>
+    <div class="ref-item">
+      <span class="authors">[5] Hyndman, R. J., &amp; Athanasopoulos, G. (2018).</span><br>
+      <span class="title">Forecasting: Principles and Practice.</span><br>
+      <span class="source">OTexts, 2nd Edition</span>
+    </div>
+    <div class="ref-item">
+      <span class="authors">[6] Box, G. E. P., Jenkins, G. M., &amp; Reinsel, G. C. (2015).</span><br>
+      <span class="title">Time Series Analysis: Forecasting and Control.</span><br>
+      <span class="source">Wiley, 5th Edition</span>
+    </div>
+    <div class="ref-item">
+      <span class="authors">[7] Chen, T., &amp; Guestrin, C. (2016).</span><br>
+      <span class="title">XGBoost: A Scalable Tree Boosting System.</span><br>
+      <span class="source">Proceedings of the 22nd ACM SIGKDD, pp. 785&ndash;794</span>
+    </div>
+    <div class="ref-item">
+      <span class="authors">[8] Hochreiter, S., &amp; Schmidhuber, J. (1997).</span><br>
+      <span class="title">Long Short-Term Memory.</span><br>
+      <span class="source">Neural Computation, 9(8), 1735&ndash;1780</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SLIDE 32: THANK YOU ═══════════════════ -->
+<div class="slide title-slide" style="background: linear-gradient(135deg, #0D0D15 0%, #1A0A0A 100%);">
+  <div style="font-size: 80px; font-weight: 900; letter-spacing: 4px; margin-bottom: 20px;">THANK YOU</div>
+  <div class="team-badge" style="margin-bottom: 16px;">TEAM A9</div>
+  <div class="subtitle">Questions &amp; Discussion</div>
+  <div class="f1-stripe"></div>
+</div>
+
+</body>
+</html>

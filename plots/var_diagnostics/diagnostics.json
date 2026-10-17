@@ -1,0 +1,42 @@
+{
+  "lag_order": 1,
+  "aic": -22.291067360781028,
+  "bic": -21.856999790455532,
+  "compounds_used": [
+    "SOFT",
+    "MEDIUM",
+    "HARD"
+  ],
+  "granger_causality": {
+    "MEDIUM\u2192SOFT": {
+      "f_statistic": 0.4228230586077413,
+      "p_value": 0.5225825552536256,
+      "significant": false
+    },
+    "HARD\u2192SOFT": {
+      "f_statistic": 0.06382905012772082,
+      "p_value": 0.802999737438226,
+      "significant": false
+    },
+    "SOFT\u2192MEDIUM": {
+      "f_statistic": 12.96997403745715,
+      "p_value": 0.0016780437974616212,
+      "significant": true
+    },
+    "HARD\u2192MEDIUM": {
+      "f_statistic": 1.302709280091899,
+      "p_value": 0.2665676482904819,
+      "significant": false
+    },
+    "SOFT\u2192HARD": {
+      "f_statistic": 8.311611558337534,
+      "p_value": 0.008900884922351533,
+      "significant": true
+    },
+    "MEDIUM\u2192HARD": {
+      "f_statistic": 0.018776841574192488,
+      "p_value": 0.8923134354056519,
+      "significant": false
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "best_model": "LSTM",
+  "best_instance": {
+    "name": "LSTM",
+    "rmse": 1.0647453881408202
+  },
+  "best_curve": {
+    "name": "VAR",
+    "rmse": 0.8498125412056563
+  },
+  "metrics": {
+    "rmse": 1.0647453881408202,
+    "mae": 0.8028699403202302,
+    "r2": 0.11043410167869838,
+    "eval_level": "Instance"
+  }
+}

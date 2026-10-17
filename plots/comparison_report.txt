@@ -1,0 +1,65 @@
+======================================================================
+F1 PIT STOP PREDICTION - MODEL COMPARISON REPORT
+======================================================================
+
+MODEL PERFORMANCE COMPARISON:
+--------------------------------------------------
+        Eval Level      RMSE       MAE        R²  Accuracy  F1 Score
+Model                                                               
+ARIMA        Curve  1.018479  0.701997  0.006281       NaN       NaN
+VAR          Curve  0.849813  0.584737  0.044107       NaN       NaN
+XGBoost   Instance  1.245710  0.799792  0.447525  0.824146  0.579509
+LSTM      Instance  1.064745  0.802870  0.110434       NaN       NaN
+Hybrid    Instance  1.253149  0.801093  0.440906       NaN       NaN
+
+EVALUATION METHODOLOGY:
+--------------------------------------------------
+Instance-level: model predicts per lap-row, compared to actual
+  lap time delta. Larger test set, finer granularity.
+Curve-level: model forecasts degradation curves per stint, compared
+  to averaged actual degradation. Comparable across TS models.
+
+NOTE: Instance and Curve metrics are NOT directly comparable.
+      XGBoost/LSTM instance RMSE << ARIMA/VAR/Hybrid curve RMSE
+      is expected due to different evaluation granularity.
+
+BEST INSTANCE-LEVEL MODEL: LSTM
+  RMSE: 1.0647  MAE: 0.8029  R2: 0.1104
+BEST CURVE-LEVEL MODEL:    VAR
+  RMSE: 0.8498  MAE: 0.5847  R2: 0.0441
+
+HYBRID MODEL (Residual Stacking):
+--------------------------------------------------
+  Base: ARIMA degradation curve per compound
+  Correction: XGBoost trained on residuals
+  Final = ARIMA_prediction + XGBoost_residual
+
+XGBOOST PIT STOP CLASSIFICATION:
+--------------------------------------------------
+  Accuracy:  0.8241
+  Precision: 0.6307
+  Recall:    0.5360
+  F1 Score:  0.5795
+
+MODEL DESCRIPTIONS:
+--------------------------------------------------
+1. ARIMA: Autoregressive Integrated Moving Average [Curve]
+   - Time series model on averaged per-compound degradation curves
+   - Models degradation as an autoregressive process
+
+2. VAR: Vector Autoregression [Curve]
+   - Multivariate model treating all compound curves as a system
+   - Captures cross-compound dynamics and lead-lag relationships
+
+3. XGBoost: Gradient Boosted Decision Trees [Instance]
+   - Feature-based ML model capturing non-linear interactions
+   - Considers compound, circuit, driver effects simultaneously
+   - Also includes pit stop binary classifier (F1 score)
+
+4. LSTM: Long Short-Term Memory Neural Network [Instance]
+   - Deep learning model for sequential data
+   - Autoregressive per-step prediction
+
+5. Hybrid (ARIMA+XGBoost): Residual Stacking [Instance]
+   - ARIMA base prediction + XGBoost residual correction
+   - Combines time-series structure with feature-based learning

@@ -1,0 +1,15 @@
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local pipeline cache and runtime logs
+cache/
+*.log
+
+# Local environment and notebook artifacts
+.env
+.venv/
+.ipynb_checkpoints/
